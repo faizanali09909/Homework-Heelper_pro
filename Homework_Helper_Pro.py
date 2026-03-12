@@ -38,7 +38,7 @@ st.markdown("""
     .main-header {
         font-family: 'Outfit', sans-serif;
         text-align: center;
-        background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+        background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 800;
@@ -95,11 +95,15 @@ st.markdown("""
         transition: all 0.3s ease;
     }
 
-    /* Remove irritating red/orange focus outline */
+    /* Remove irritating red/orange focus outline COMPLETELY */
     .stTextArea textarea:focus {
-        border-color: #2563eb !important;
-        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+        border-color: transparent !important;
+        box-shadow: none !important;
         outline: none !important;
+    }
+
+    .stTextArea textarea:hover {
+        border-color: #e2e8f0 !important;
     }
 
     /* Sidebar Styling */
