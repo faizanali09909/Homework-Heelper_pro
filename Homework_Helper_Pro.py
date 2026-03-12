@@ -1,10 +1,9 @@
-import streamlit as st
 import os
-from dotenv import load_dotenv
-
-# Disable CrewAI telemetry to avoid signal handler errors
+# Disable CrewAI telemetry BEFORE any crewai imports to avoid signal handler errors
 os.environ["CREWAI_DISABLE_TELEMETRY"] = "true"
 
+import streamlit as st
+from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, LLM
 from crewai_tools import SerperDevTool
 
@@ -14,10 +13,10 @@ load_dotenv()
 # Initialize tools
 search = SerperDevTool()
 
-# Initialize LLM with Gemini 2.5 Flash
+# Initialize LLM
 llm = LLM(
     model="groq/llama-3.1-8b-instant",
-    api_key=os.getenv("SECONDGROQ_API_KEY")
+    api_key=os.getenv("GROQ_API_KEY")
 )
 
 # Page configuration
