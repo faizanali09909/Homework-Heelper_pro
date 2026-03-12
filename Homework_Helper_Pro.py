@@ -8,6 +8,22 @@ from crewai import Agent, Task, Crew, LLM
 from crewai_tools import SerperDevTool
 import time
 import re
+import json
+
+USER_DATA_FILE = "users_data.json"
+SESSION_FILE = "session_data.json"
+
+def load_data(filepath):
+    if os.path.exists(filepath):
+        try:
+            with open(filepath, "r") as f:
+                return json.load(f)
+        except: return {}
+    return {}
+
+def save_data(filepath, data):
+    with open(filepath, "w") as f:
+        json.dump(data, f)
 
 # Load environment variables
 load_dotenv()
@@ -129,17 +145,23 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize Session State
+# Sidebar Content
+users_db = load_data(USER_DATA_FILE)
+session_info = load_data(SESSION_FILE)
+
+# Initialize Session State with Persistence
 if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
+    st.session_state.logged_in = session_info.get("logged_in", False)
 if 'user_name' not in st.session_state:
-    st.session_state.user_name = ""
+    st.session_state.user_name = session_info.get("user_name", "")
 if 'homework_history' not in st.session_state:
-    st.session_state.homework_history = []
+    if st.session_state.logged_in and st.session_state.user_name in users_db:
+        st.session_state.homework_history = users_db[st.session_state.user_name].get("history", [])
+    else:
+        st.session_state.homework_history = []
 if 'latest_result' not in st.session_state:
     st.session_state.latest_result = None
 
-# Sidebar Content
 with st.sidebar:
     st.markdown("<h2 style='text-align: center; color: #059669; font-family: Outfit;'>👤 Account</h2>", unsafe_allow_html=True)
     
@@ -150,13 +172,18 @@ with st.sidebar:
             user = st.text_input("Username", key="login_user")
             pwd = st.text_input("Password", type="password", key="login_pwd")
             if st.button("Login", use_container_width=True):
-                if user and pwd:
-                    st.session_state.logged_in = True
-                    st.session_state.user_name = user
-                    st.success(f"Welcome back, {user}!")
-                    st.rerun()
+                if user in users_db:
+                    if users_db[user]["password"] == pwd:
+                        st.session_state.logged_in = True
+                        st.session_state.user_name = user
+                        st.session_state.homework_history = users_db[user].get("history", [])
+                        save_data(SESSION_FILE, {"logged_in": True, "user_name": user})
+                        st.success(f"Welcome back, {user}!")
+                        st.rerun()
+                    else:
+                        st.error("❌ Wrong Password!")
                 else:
-                    st.error("Please enter credentials")
+                    st.error("❌ User not found!")
         
         with auth_mode[1]:
             new_user = st.text_input("Username", key="signup_user")
@@ -164,17 +191,26 @@ with st.sidebar:
             confirm_pwd = st.text_input("Confirm Password", type="password", key="signup_confirm")
             if st.button("Create Account", use_container_width=True):
                 if new_user and new_pwd == confirm_pwd:
-                    st.session_state.logged_in = True
-                    st.session_state.user_name = new_user
-                    st.success("Account created!")
-                    st.rerun()
+                    if new_user in users_db:
+                        st.error("❌ Username already exists!")
+                    else:
+                        users_db[new_user] = {"password": new_pwd, "history": []}
+                        save_data(USER_DATA_FILE, users_db)
+                        st.session_state.logged_in = True
+                        st.session_state.user_name = new_user
+                        st.session_state.homework_history = []
+                        save_data(SESSION_FILE, {"logged_in": True, "user_name": new_user})
+                        st.success("✨ Account created!")
+                        st.rerun()
                 else:
-                    st.error("Passwords don't match or fields empty")
+                    st.error("❌ Passwords don't match or fields empty")
     else:
         st.write(f"Logged in as: **{st.session_state.user_name}**")
         if st.button("Logout", use_container_width=True):
             st.session_state.logged_in = False
             st.session_state.user_name = ""
+            st.session_state.homework_history = []
+            save_data(SESSION_FILE, {"logged_in": False, "user_name": ""})
             st.rerun()
 
     st.markdown("---")
@@ -311,6 +347,11 @@ with col_mid:
                             "title": title,
                             "result": str(result)
                         })
+                        # Persistence update
+                        users_db = load_data(USER_DATA_FILE)
+                        if st.session_state.user_name in users_db:
+                            users_db[st.session_state.user_name]["history"] = st.session_state.homework_history
+                            save_data(USER_DATA_FILE, users_db)
                         st.success("✨ Research Complete! Saved to your history.")
                     else:
                         st.success("✨ Research Complete!")
