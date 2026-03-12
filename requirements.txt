@@ -1,5 +1,6 @@
 streamlit
 python-dotenv
-crewai
+crewai>=0.80.0
 crewai-tools
 litellm
+pydantic>=2.4.1
