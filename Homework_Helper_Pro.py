@@ -92,6 +92,14 @@ st.markdown("""
         border-radius: 12px;
         border: 1px solid #e2e8f0;
         font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+
+    /* Remove irritating red/orange focus outline */
+    .stTextArea textarea:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+        outline: none !important;
     }
 
     /* Sidebar Styling */
@@ -129,7 +137,6 @@ with st.sidebar:
     st.info("🔑 **Personalize your experience**. Enter your own API keys below.")
     
     user_groq_key = st.text_input("Groq API Key", type="password", placeholder="gsk_...", help="Get your key at console.groq.com")
-    user_serper_key = st.text_input("Serper API Key", type="password", placeholder="Enter Serper key...", help="Get your key at serper.dev")
     
     st.markdown("---")
     
@@ -163,9 +170,8 @@ with col_mid:
         st.image(hero_image_path, use_container_width=True)
     else:
         # Fallback to a placeholder if image is missing for any reason
-        st.markdown("<div style='height: 300px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3c7 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center; color: #4338ca; font-size: 1.5rem; font-weight: bold;'>Smart Learning Hub</div>", unsafe_allow_html=True)
+        st.markdown("<div style='height: 200px; background: #f8fafc; border: 2px dashed #e2e8f0; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.5rem; font-family: Outfit; font-weight: 700;'>✨ Smart Learning Hub</div>", unsafe_allow_html=True)
 
-    st.markdown("<div class='glass-card fade-in'>", unsafe_allow_html=True)
     st.markdown("### 📝 What do you need help with?")
     topic = st.text_area(
         label="Enter your topic, question, or problem statement:",
@@ -177,13 +183,12 @@ with col_mid:
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
         process_button = st.button("🚀 Research & Explain", use_container_width=True)
-    st.markdown("</div>", unsafe_allow_html=True)
 
     # Core Logic
-    def run_crew_logic(topic_input, groq_key, serper_key):
+    def run_crew_logic(topic_input, groq_key):
         # Use provided keys or fall back to env
         final_groq = groq_key if groq_key else os.getenv("GROQ_API_KEY")
-        final_serper = serper_key if serper_key else os.getenv("SERPER_API_KEY")
+        final_serper = os.getenv("SERPER_API_KEY")
         
         if not final_groq:
             st.error("⚠️ Groq API Key is missing! Please provide it in the sidebar.")
@@ -247,7 +252,7 @@ with col_mid:
             st.warning("⚠️ Please enter a topic first!")
         else:
             with st.spinner("🧠 Connecting to AI Knowledge Graph... Our researchers are on it!"):
-                result = run_crew_logic(topic, user_groq_key, user_serper_key)
+                result = run_crew_logic(topic, user_groq_key)
                 
                 if result:
                     st.session_state.latest_result = str(result)
