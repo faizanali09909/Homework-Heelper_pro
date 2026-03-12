@@ -63,10 +63,11 @@ st.markdown("""
     }
 
     .header-emoji {
-        filter: drop-shadow(0 0 5px #fbbf24) brightness(1.2);
-        color: #fbbf24 !important;
         display: inline-block;
         margin-right: 15px;
+        color: transparent;
+        text-shadow: 0 0 0 #fbbf24; /* Primary trick for emoji coloring */
+        filter: brightness(1.1) drop-shadow(0 0 2px rgba(251, 191, 36, 0.5));
     }
 
     .sub-header {
@@ -155,25 +156,35 @@ with col_title:
 
 with col_auth:
     st.markdown("<div style='text-align: right; padding-top: 15px;'>", unsafe_allow_html=True)
+    
+    # Navigation Buttons row
+    nav_c1, nav_c2, nav_c3 = st.columns([1, 1, 1])
+    
+    with nav_c1:
+        if st.button("🏠 Home", key="nav_home", use_container_width=True):
+            st.session_state.page = "home"
+            st.rerun()
+
     if not st.session_state.logged_in:
-        c1, c2 = st.columns(2)
-        with c1:
+        with nav_c2:
             if st.button("Login", key="nav_login", use_container_width=True):
                 st.session_state.page = "login"
                 st.rerun()
-        with c2:
+        with nav_c3:
             if st.button("Sign Up", key="nav_signup", use_container_width=True):
                 st.session_state.page = "signup"
                 st.rerun()
     else:
-        st.write(f"Hi, **{st.session_state.user_name}**")
-        if st.button("Logout", key="nav_logout"):
-            st.session_state.logged_in = False
-            st.session_state.user_name = ""
-            st.session_state.homework_history = []
-            st.session_state.page = "home"
-            save_data(SESSION_FILE, {"logged_in": False, "user_name": ""})
-            st.rerun()
+        with nav_c2:
+            st.write(f"**{st.session_state.user_name}**")
+        with nav_c3:
+            if st.button("Logout", key="nav_logout", use_container_width=True):
+                st.session_state.logged_in = False
+                st.session_state.user_name = ""
+                st.session_state.homework_history = []
+                st.session_state.page = "home"
+                save_data(SESSION_FILE, {"logged_in": False, "user_name": ""})
+                st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<p class='sub-header' style='margin-left: 0;'>Experience the future of learning with autonomous AI research agents</p>", unsafe_allow_html=True)
@@ -209,17 +220,18 @@ elif st.session_state.page == "signup":
     new_pwd = st.text_input("Choose Password", type="password")
     confirm_pwd = st.text_input("Confirm Password", type="password")
     
-    if new_user in users_db:
-        st.warning(f"⚠️ You already have an account named '{new_user}'.")
-        c1, c2, c3 = st.columns([1, 1, 2])
+    if new_user and new_user in users_db:
+        st.info(f"👋 **Hey {new_user}!** It looks like you already have an account with us.")
+        st.write("Would you like to use your existing account or create a new one with a different name?")
+        c1, c2 = st.columns([1, 1])
         with c1:
-            if st.button("Use this Account"):
+            if st.button("✅ Yes, use my account", use_container_width=True):
                 st.session_state.page = "login"
                 st.rerun()
         with c2:
-            if st.button("Pick Different Name"):
-                # Just clears and lets them type again
-                pass
+            if st.button("❌ No, I'll pick a different name", use_container_width=True):
+                # Just clears the input by reloading or letting them edit
+                st.rerun()
     else:
         c1, c2 = st.columns([1, 4])
         with c1:
