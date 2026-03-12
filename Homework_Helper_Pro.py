@@ -203,7 +203,7 @@ col_left, col_mid, col_right = st.columns([1, 4, 1])
 
 with col_mid:
     # Header Section
-    st.markdown("<h1 class='main-header'>📚 Homework Helper Pro</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='main-header'><span style='color: #fbbf24;'>📚</span> Homework Helper Pro</h1>", unsafe_allow_html=True)
     st.markdown("<p class='sub-header'>Experience the future of learning with autonomous AI research agents</p>", unsafe_allow_html=True)
     
     # Hero Image (Using the absolute path of the generated image)
@@ -306,11 +306,15 @@ with col_mid:
                     words = topic.split()
                     title = " ".join(words[:5]) + ("..." if len(words) > 5 else "")
                     
-                    st.session_state.homework_history.append({
-                        "title": title,
-                        "result": str(result)
-                    })
-                    st.success("✨ Research Complete!")
+                    if st.session_state.logged_in:
+                        st.session_state.homework_history.append({
+                            "title": title,
+                            "result": str(result)
+                        })
+                        st.success("✨ Research Complete! Saved to your history.")
+                    else:
+                        st.success("✨ Research Complete!")
+                        st.info("💡 **Tip**: Log in to save your research history permanently.")
 
     # Display Latest Result
     if st.session_state.latest_result:
