@@ -38,7 +38,7 @@ st.markdown("""
     .main-header {
         font-family: 'Outfit', sans-serif;
         text-align: center;
-        background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+        background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 800;
@@ -130,6 +130,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Initialize Session State
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+if 'user_name' not in st.session_state:
+    st.session_state.user_name = ""
 if 'homework_history' not in st.session_state:
     st.session_state.homework_history = []
 if 'latest_result' not in st.session_state:
@@ -137,7 +141,44 @@ if 'latest_result' not in st.session_state:
 
 # Sidebar Content
 with st.sidebar:
-    st.markdown("<h2 style='text-align: center; color: #2563eb; font-family: Outfit;'>⚙️ Configuration</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #059669; font-family: Outfit;'>👤 Account</h2>", unsafe_allow_html=True)
+    
+    if not st.session_state.logged_in:
+        auth_mode = st.tabs(["Login", "Sign Up"])
+        
+        with auth_mode[0]:
+            user = st.text_input("Username", key="login_user")
+            pwd = st.text_input("Password", type="password", key="login_pwd")
+            if st.button("Login", use_container_width=True):
+                if user and pwd:
+                    st.session_state.logged_in = True
+                    st.session_state.user_name = user
+                    st.success(f"Welcome back, {user}!")
+                    st.rerun()
+                else:
+                    st.error("Please enter credentials")
+        
+        with auth_mode[1]:
+            new_user = st.text_input("Username", key="signup_user")
+            new_pwd = st.text_input("Password", type="password", key="signup_pwd")
+            confirm_pwd = st.text_input("Confirm Password", type="password", key="signup_confirm")
+            if st.button("Create Account", use_container_width=True):
+                if new_user and new_pwd == confirm_pwd:
+                    st.session_state.logged_in = True
+                    st.session_state.user_name = new_user
+                    st.success("Account created!")
+                    st.rerun()
+                else:
+                    st.error("Passwords don't match or fields empty")
+    else:
+        st.write(f"Logged in as: **{st.session_state.user_name}**")
+        if st.button("Logout", use_container_width=True):
+            st.session_state.logged_in = False
+            st.session_state.user_name = ""
+            st.rerun()
+
+    st.markdown("---")
+    st.markdown("<h2 style='text-align: center; color: #059669; font-family: Outfit;'>⚙️ Configuration</h2>", unsafe_allow_html=True)
     st.info("🔑 **Personalize your experience**. Enter your own API keys below.")
     
     user_groq_key = st.text_input("Groq API Key", type="password", placeholder="gsk_...", help="Get your key at console.groq.com")
