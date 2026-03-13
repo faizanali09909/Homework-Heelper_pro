@@ -296,6 +296,19 @@ elif st.session_state.page == "home":
             process_button = st.button("🚀 Research & Explain", use_container_width=True)
 
         # Core Logic
+        def clean_output(text):
+            # Remove phrases like "Thought: I now can give a great answer."
+            # and variations at the beginning of the text.
+            patterns = [
+                r"^Thought:\s*I now can give a great answer\.\s*",
+                r"^Thought:\s*I've got the final answer\s*",
+                r"^Final Answer:\s*"
+            ]
+            cleaned = text
+            for pattern in patterns:
+                cleaned = re.sub(pattern, "", cleaned, flags=re.IGNORECASE)
+            return cleaned.strip()
+
         def run_crew_logic(topic_input, groq_key):
             final_groq = groq_key if groq_key else os.getenv("GROQ_API_KEY")
             final_serper = os.getenv("SERPER_API_KEY")
@@ -341,14 +354,15 @@ elif st.session_state.page == "home":
                 st.warning("⚠️ Please enter a topic first!")
             else:
                 with st.spinner("🧠 Connecting to AI Knowledge Graph..."):
-                    result = run_crew_logic(topic, user_groq_key)
-                    if result:
-                        st.session_state.latest_result = str(result)
+                    raw_result = run_crew_logic(topic, user_groq_key)
+                    if raw_result:
+                        result = clean_output(str(raw_result))
+                        st.session_state.latest_result = result
                         words = topic.split()
                         title = " ".join(words[:5]) + ("..." if len(words) > 5 else "")
                         
                         if st.session_state.logged_in:
-                            st.session_state.homework_history.append({"title": title, "result": str(result)})
+                            st.session_state.homework_history.append({"title": title, "result": result})
                             users_db = load_data(USER_DATA_FILE)
                             if st.session_state.user_name in users_db:
                                 users_db[st.session_state.user_name]["history"] = st.session_state.homework_history
