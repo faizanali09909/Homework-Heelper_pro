@@ -127,6 +127,26 @@ st.markdown("""
     .stTextArea textarea:hover {
         border-color: #e2e8f0 !important;
     }
+
+    /* Custom Footer Box */
+    .footer-box {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        margin-top: 3rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .footer-text {
+        background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin: 0;
+        font-family: 'Outfit', sans-serif;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -256,8 +276,7 @@ elif st.session_state.page == "home":
     # Sidebar for Config & History
     with st.sidebar:
         st.markdown("<h2 style='text-align: center; color: #059669; font-family: Outfit;'>⚙️ Configuration</h2>", unsafe_allow_html=True)
-        st.info("🔑 **Personalize your experience**. Enter your own API keys below.")
-        user_groq_key = st.text_input("Groq API Key", type="password", placeholder="gsk_...", help="Get your key at console.groq.com")
+        st.info("🚀 Experience advanced AI research")
         st.markdown("---")
         
         if st.session_state.homework_history:
@@ -309,12 +328,12 @@ elif st.session_state.page == "home":
                 cleaned = re.sub(pattern, "", cleaned, flags=re.IGNORECASE)
             return cleaned.strip()
 
-        def run_crew_logic(topic_input, groq_key):
-            final_groq = groq_key if groq_key else os.getenv("GROQ_API_KEY")
+        def run_crew_logic(topic_input):
+            final_groq = os.getenv("GROQ_API_KEY")
             final_serper = os.getenv("SERPER_API_KEY")
             
             if not final_groq:
-                st.error("⚠️ Groq API Key is missing! Please provide it in the sidebar.")
+                st.error("⚠️ Groq API Key is missing in .env file!")
                 return None
             
             os.environ["SERPER_API_KEY"] = final_serper if final_serper else ""
@@ -354,7 +373,7 @@ elif st.session_state.page == "home":
                 st.warning("⚠️ Please enter a topic first!")
             else:
                 with st.spinner("🧠 Connecting to AI Knowledge Graph..."):
-                    raw_result = run_crew_logic(topic, user_groq_key)
+                    raw_result = run_crew_logic(topic)
                     if raw_result:
                         result = clean_output(str(raw_result))
                         st.session_state.latest_result = result
@@ -381,4 +400,9 @@ elif st.session_state.page == "home":
             st.markdown("</div>", unsafe_allow_html=True)
 
 # Footer
-st.markdown("<br><br><hr><p style='text-align: center; color: #94a3b8; font-size: 0.9rem;'>Powered by CrewAI & Advanced Agentic AI Architecture 🚀</p>", unsafe_allow_html=True)
+st.markdown("""
+<div class='footer-box'>
+    <p class='footer-text'>✨ This website is made by Faizan Ali ✨</p>
+    <p style='color: #94a3b8; font-size: 0.8rem; margin-top: 5px;'>Powered by CrewAI & Advanced Agentic AI Architecture 🚀</p>
+</div>
+""", unsafe_allow_html=True)
