@@ -13,7 +13,10 @@ except ImportError:
 os.environ["CREWAI_DISABLE_TELEMETRY"] = "true"
 
 import streamlit as st
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    pass
 from crewai import Agent, Task, Crew, LLM
 from crewai.tools import tool
 from crewai_tools import SerperDevTool
@@ -42,7 +45,10 @@ def save_data(filepath, data):
         json.dump(data, f)
 
 # Load environment variables
-load_dotenv()
+try:
+    load_dotenv()
+except NameError:
+    pass
 
 # Sync API Keys
 api_key = os.getenv("GEMINI_API_KEY")
